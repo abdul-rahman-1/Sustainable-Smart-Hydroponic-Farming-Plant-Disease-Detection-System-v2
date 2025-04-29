@@ -7,128 +7,108 @@ from threading import Thread
 
 app = Flask(__name__)
 
-# MongoDB connection string
+# MongoDB connection string (full credentials)
 MONGO_URI = "mongodb+srv://AdminClint0001:uTYZ4fPph7whTpXC@cluster0.eifjnhd.mongodb.net/"
 client = MongoClient(MONGO_URI)
 db = client['Sensor']
 collection = db['Data']
 
-# ESP32 URL
-ESP32_URL = "http://172.25.60.213/"
-RETRY_DELAY = 1  # Retry interval in seconds
+# ESP32 URLs
+ESP32_ENV_URL   = "http://192.168.164.179/"  # Temperature/Humidity/CO2/FlowRate
+ESP32_WATER_URL = "http://192.168.164.68/"   # Distance_cm / TDS_ppm (new)
+
+RETRY_DELAY = 1  # seconds between polls
+
+def fetch_json(url):
+    """GET JSON from an ESP32 endpoint, or return None on failure."""
+    try:
+        resp = requests.get(url, timeout=5)
+        if resp.status_code == 200:
+            return resp.json()
+    except requests.RequestException:
+        pass
+    return None
 
 def update_data():
-    """Fetch sensor data and update MongoDB."""
     sensor_status = "Offline"
 
     while True:
-        try:
-            # Fetch data from the ESP32
-            response = requests.get(ESP32_URL, timeout=5)
-            
-            if response.status_code == 200:
-                line = response.text.strip()  # Get the JSON response as a string
-                try:
-                    json_data = json.loads(line)
+        # Fetch from both devices
+        env   = fetch_json(ESP32_ENV_URL)
+        water = fetch_json(ESP32_WATER_URL)
 
-                    # Handle sensor offline scenario
-                    if (
-                        json_data["Temperature"] == -1 or 
-                        json_data["Humidity"] == -1 or 
-                        json_data["CO2"] == -1 or 
-                        json_data["FlowRate"] == -1
-                    ):
-                        if sensor_status != "Offline":
-                            collection.update_one({}, {"$set": {"Sensor": "Offline"}}, upsert=True)
-                            sensor_status = "Offline"
-                    else:
-                        # Handle sensor online scenario
-                        if sensor_status != "Online":
-                            collection.update_one({}, {"$set": {"Sensor": "Online"}}, upsert=True)
-                            sensor_status = "Online"
-
-                        # Fetch the existing document
-                        current_data = collection.find_one({})
-
-                        # Check if the document exists before proceeding
-                        if current_data:
-                            # Calculate new averages
-                            new_avg_temp = (float(current_data['Avg_Temp'].split(',')[0].split(':')[0]) + json_data['Temperature']) / 2
-                            new_avg_humid = (float(current_data['Avg_Humid'].split(',')[0].split(':')[0]) + json_data['Humidity']) / 2
-                            new_avg_co2 = (float(current_data['Avg_CO2'].split(',')[0].split(':')[0]) + json_data['CO2']) / 2
-                            new_avg_water = (float(current_data['Avg_FlowRate'].split(',')[0].split(':')[0]) + json_data['FlowRate']) / 2
-
-                            # Get the current date and three-letter month abbreviation
-                            date_with_month = time.strftime("%d/%b")
-
-                            # Format the new averages
-                            new_avg_temp_str = f"{new_avg_temp:.1f}:{date_with_month}"
-                            new_avg_humid_str = f"{new_avg_humid:.1f}:{date_with_month}"
-                            new_avg_co2_str = f"{new_avg_co2:.1f}:{date_with_month}"
-                            new_avg_water_str = f"{new_avg_water:.1f}:{date_with_month}"
-
-                            # Check if the date has changed
-                            if current_data['LastUpdate']['Date'] != time.strftime("%d/%m"):
-                                # Shift daily arrays
-                                avg_temp_list = [new_avg_temp_str] + current_data['Avg_Temp'].split(',')[:6]
-                                avg_humid_list = [new_avg_humid_str] + current_data['Avg_Humid'].split(',')[:6]
-                                avg_co2_list = [new_avg_co2_str] + current_data['Avg_CO2'].split(',')[:6]
-                                avg_water_list = [new_avg_water_str] + current_data['Avg_FlowRate'].split(',')[:6]
-                            else:
-                                # Update only the first element
-                                avg_temp_list = [new_avg_temp_str] + current_data['Avg_Temp'].split(',')[1:]
-                                avg_humid_list = [new_avg_humid_str] + current_data['Avg_Humid'].split(',')[1:]
-                                avg_co2_list = [new_avg_co2_str] + current_data['Avg_CO2'].split(',')[1:]
-                                avg_water_list = [new_avg_water_str] + current_data['Avg_FlowRate'].split(',')[1:]
-
-                            # Prepare the new data
-                            new_data = {
-                                "Temperature": json_data["Temperature"],
-                                "Humidity": json_data["Humidity"],
-                                "CO2": json_data["CO2"],
-                                "FlowRate": json_data["FlowRate"],
-                                "LastUpdate": {
-                                    "Time": time.strftime("%H:%M"),
-                                    "Date": time.strftime("%d/%m"),
-                                },
-                                "Avg_Temp": ','.join(avg_temp_list),
-                                "Avg_Humid": ','.join(avg_humid_list),
-                                "Avg_CO2": ','.join(avg_co2_list),
-                                "Avg_FlowRate": ','.join(avg_water_list),
-                            }
-
-                            # Update the document in MongoDB
-                            collection.update_one({}, {"$set": new_data})
-                            print(
-                                f"UPDATED: Temperature={json_data['Temperature']}, "
-                                f"Humidity={json_data['Humidity']}, "
-                                f"CO2={json_data['CO2']}, "
-                                f"FlowRate={json_data['FlowRate']}"
-                            )
-                        else:
-                            print("No existing document found in the database. Skipping update.")
-
-                except json.JSONDecodeError:
-                    print(f"Invalid data received: {line}")
-            else:
-                if sensor_status != "Offline":
-                    collection.update_one({}, {"$set": {"Sensor": "Offline"}}, upsert=True)
-                    print("Failed to fetch valid data. Sensor marked as Offline.")
-                    sensor_status = "Offline"
-
-        except requests.RequestException as e:
-            print(f"ESP32 Offline ; Network ERROR")
+        # If either fails, mark Offline, skip update
+        if not env or not water:
             if sensor_status != "Offline":
                 collection.update_one({}, {"$set": {"Sensor": "Offline"}}, upsert=True)
                 sensor_status = "Offline"
+            print("One or both ESP32s offline → Sensor marked Offline")
+            time.sleep(RETRY_DELAY)
+            continue
 
-        except Exception as e:
-            print(f"ESP32 Offline ; Unexpected ERROR: {e}")
+        # Map JSON to our fields
+        payload = {
+            "Temperature": env["Temperature"],
+            "Humidity":    env["Humidity"],
+            "CO2":         env["CO2"],
+            "FlowRate":    env["FlowRate"],
+            "Level":       water["Distance_cm"],   # new
+            "TDS":         water["TDS_ppm"],       # new
+        }
 
+        # Determine if sensors are “Online” or “Offline” by env data
+        if any(payload[k] == -1 for k in ("Temperature","Humidity","CO2","FlowRate")):
+            new_status = "Offline"
+        else:
+            new_status = "Online"
+
+        # Update sensor status if changed
+        if new_status != sensor_status:
+            collection.update_one({}, {"$set": {"Sensor": new_status}}, upsert=True)
+            sensor_status = new_status
+
+        # Fetch the existing document
+        current = collection.find_one({})
+        if not current:
+            print("No existing document found—skipping update")
+            time.sleep(RETRY_DELAY)
+            continue
+
+        # Helper: update a 7-day rolling average list stored as "v:DD/Mon,..." 
+        def rolling_avg(field, new_val):
+            entries = current[field].split(',')
+            today_tag = time.strftime("%d/%b")
+            entry_str = f"{new_val:.1f}:{today_tag}"
+            if current['LastUpdate']['Date'] != time.strftime("%d/%m"):
+                # new day: prepend, drop oldest
+                entries = [entry_str] + entries[:6]
+            else:
+                # same day: replace today's value
+                entries[0] = entry_str
+            return ','.join(entries)
+
+        # Build update document
+        update_doc = {
+            **payload,
+            "LastUpdate": {
+                "Time": time.strftime("%H:%M"),
+                "Date": time.strftime("%d/%m"),
+            },
+            "Avg_Temp":     rolling_avg('Avg_Temp',     payload['Temperature']),
+            "Avg_Humid":    rolling_avg('Avg_Humid',    payload['Humidity']),
+            "Avg_CO2":      rolling_avg('Avg_CO2',      payload['CO2']),
+            "Avg_FlowRate": rolling_avg('Avg_FlowRate', payload['FlowRate']),
+            "Avg_Level":    rolling_avg('Avg_Level',    payload['Level']),
+            "Avg_TDS":      rolling_avg('Avg_TDS',      payload['TDS']),
+        }
+
+        # Perform the update
+        collection.update_one({}, {"$set": update_doc})
+        print(f"UPDATED: {update_doc}")
         time.sleep(RETRY_DELAY)
 
-# Start the thread to update the data
-update_thread = Thread(target=update_data)
+# Start background thread
+update_thread = Thread(target=update_data, daemon=True)
 update_thread.start()
 
 @app.route("/")
@@ -136,5 +116,5 @@ def home():
     return "Farming Data Server is Running"
 
 if __name__ == "__main__":
-    # Change to allow external access
+    # Allow external connections
     app.run(host="0.0.0.0", port=5000)

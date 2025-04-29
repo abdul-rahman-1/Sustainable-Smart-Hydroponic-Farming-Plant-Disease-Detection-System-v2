@@ -8,6 +8,8 @@ import FlowRate from "./components/FlowRate";
 import Temp from "./components/Temp";
 import Humidity from "./components/Humidity";
 import Contacts from "./components/Contact";
+import TDS from "./components/TDS";
+import Level from "./components/Level";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,24 @@ function App() {
                         Flow_Rate
                       </NavLink>
                     </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className="nav-NavLink mx-3 p-3"
+                        to="/tds"
+                        onClick={handleNavLinkClick}
+                      >
+                       TDS
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        className="nav-NavLink mx-3 p-3"
+                        to="/level"
+                        onClick={handleNavLinkClick}
+                      >
+                       Water_Level
+                      </NavLink>
+                    </li>
 
                     <li className="nav-item">
                       <NavLink
@@ -133,6 +153,8 @@ function App() {
             <Route exact path="/Temp" element={<Temp />} />
             <Route exact path="/Humidity" element={<Humidity />} />
             <Route exact path="/Contacts" element={<Contacts />} />
+            <Route exact path="/tds" element={<TDS />} />
+            <Route exact path="/level" element={<Level />} />
           </Routes>
         </Router>
       )}
