@@ -38,13 +38,17 @@ def update_data():
         water = fetch_json(ESP32_WATER_URL)
 
         # If either fails, mark Offline, skip update
+        # If either fails, mark Offline
         if not env or not water:
-            if sensor_status != "Offline":
-                collection.update_one({}, {"$set": {"Sensor": "Offline"}}, upsert=True)
-                sensor_status = "Offline"
+            collection.update_one({}, {"$set": {"Sensor": "Offline"}}, upsert=True)
+            sensor_status = "Offline"
             print("One or both ESP32s offline → Sensor marked Offline")
             time.sleep(RETRY_DELAY)
             continue
+
+        # At this point, both responded — assume "Online"
+        collection.update_one({}, {"$set": {"Sensor": "Online"}}, upsert=True)
+        sensor_status = "Online"
 
         # Map JSON to our fields
         payload = {
