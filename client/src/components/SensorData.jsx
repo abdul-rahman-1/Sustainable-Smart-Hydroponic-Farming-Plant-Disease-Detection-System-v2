@@ -14,21 +14,18 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
     if (chartRef.current) {
       chartRef.current.destroy();
     }
-
     chartRef.current = new Chart(ctx.current, {
       type: "line",
       data: {
         labels: [],
-        datasets: [
-          {
-            label: `${label} (${unit})`,
-            data: [],
-            borderColor: chartColor,
-            backgroundColor: chartColor.replace("1)", "0.2)"),
-            fill: true,
-            borderWidth: 2,
-          },
-        ],
+        datasets: [{
+          label: `${label} (${unit})`,
+          data: [],
+          borderColor: chartColor,
+          backgroundColor: chartColor.replace("1)", "0.2)"),
+          fill: true,
+          borderWidth: 2,
+        }],
       },
       options: {
         responsive: true,
@@ -42,83 +39,80 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
 
   const fetchSensorData = async () => {
     try {
-      const response = await fetch("https://rk-server.up.railway.app/api/data", {
-        method: "GET",
-        headers: {
-          serv: "aosrhglakjhfglkjahrsoutyapow448097539208475908274dilfhgjalsh24jthwkljhlkjhw45th3lkj5h34lkj5h32lk4jhlkjhqlwekjrhtlkjwh35M",
-        },
-      });
+      const res = await fetch(
+        "https://rk-server.up.railway.app/api/data",
+        { headers: { serv: "aosrhglakjhfglkjahrsoutyapow448097539208475908274dilfhgjalsh24jthwkljhlkjhw45th3lkj5h34lkj5h32lk4jhlkjhqlwekjrhtlkjwh35M" } }
+      );
+      const data = await res.json();
+      const payload = data[0] || {};
+      console.log(data);
+      const currentStatus = payload.Sensor || "Offline";
 
-      const data = await response.json();
-      const currentStatus = data[0]?.Sensor || "Offline";
-      setSensorStatus(currentStatus);
-
-      if (currentStatus === "Online" && previousStatus.current === "Offline") {
+      // Reset chart on reconnect
+      if (
+        currentStatus === "Online" &&
+        ["Offline", "Error_Offline"].includes(previousStatus.current)
+      ) {
         initChart();
       }
       previousStatus.current = currentStatus;
+      setSensorStatus(currentStatus);
 
+      // Update last update time
+      if (payload.LastUpdate) {
+        setLastUpdateTime(
+          `${payload.LastUpdate.Date || "N/A"} ${payload.LastUpdate.Time || "N/A"}`
+        );
+      }
+
+      // Handle sensor reading
       if (currentStatus === "Online") {
-        const value = data[0]?.[dataKey];
-        const lastUpdate = data[0]?.LastUpdate;
-        setLastUpdateTime(`${lastUpdate?.Time || "N/A"} ${lastUpdate?.Date || "N/A"}`);
-        setLastValue(value !== undefined && value !== null ? value : "N/A");
+        const value = payload[dataKey];
+        setLastValue(value != null ? value : "N/A");
         updateChart(value);
       } else {
-        handleOfflineStatus(data);
+        handleOfflineStatus(payload);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setSensorStatus("Error fetching data");
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setSensorStatus("Error");
       setLastUpdateTime("N/A");
       setLastValue("N/A");
     }
   };
 
   const updateChart = (value) => {
-    const currentTime = new Date().toLocaleTimeString();
-    if (value !== undefined && value !== null && chartRef.current) {
-      chartRef.current.data.labels.push(currentTime);
+    if (chartRef.current && value != null) {
+      const t = new Date().toLocaleTimeString();
+      chartRef.current.data.labels.push(t);
       chartRef.current.data.datasets[0].data.push(value);
-
       if (chartRef.current.data.labels.length > 10) {
         chartRef.current.data.labels.shift();
         chartRef.current.data.datasets[0].data.shift();
       }
-
       chartRef.current.update();
     }
   };
 
-  const handleOfflineStatus = (data) => {
-    const lastUpdate = data[0]?.LastUpdate;
-    const avgData = data[0]?.[avgKey]?.split(",").map((item) => {
-      const [value, time] = item.split(":");
-      return {
-        value: parseFloat(value),
-        time: time || "Unknown",
-      };
-    }) || [];
-
-    setLastUpdateTime(`${lastUpdate?.Date || "N/A"} ${lastUpdate?.Time || "N/A"}`);
+  const handleOfflineStatus = (payload) => {
+    const avgData = (payload[avgKey]?.split(",") || []).map((it) => {
+      const [val, tm] = it.split(":");
+      return { value: parseFloat(val), time: tm || "Unknown" };
+    });
     setLastValue(avgData.length ? `${avgData.at(-1).value} ${unit}` : "N/A");
-
     if (chartRef.current) {
-      chartRef.current.data.labels = avgData.map((item) => item.time);
-      chartRef.current.data.datasets[0].data = avgData.map((item) => item.value);
+      chartRef.current.data.labels = avgData.map((i) => i.time);
+      chartRef.current.data.datasets[0].data = avgData.map((i) => i.value);
       chartRef.current.update();
     }
   };
 
   useEffect(() => {
     initChart();
-    const interval = setInterval(fetchSensorData, 2000);
-
+    const iv = setInterval(fetchSensorData, 2000);
     return () => {
-      clearInterval(interval);
-      if (chartRef.current) {
-        chartRef.current.destroy();
-      }
+      clearInterval(iv);
+      chartRef.current?.destroy();
     };
   }, []);
 

@@ -10,6 +10,7 @@ import Humidity from "./components/Humidity";
 import Contacts from "./components/Contact";
 import TDS from "./components/TDS";
 import Level from "./components/Level";
+import CamView from "./components/CamView";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -119,7 +120,7 @@ function App() {
                         to="/tds"
                         onClick={handleNavLinkClick}
                       >
-                       TDS
+                        TDS
                       </NavLink>
                     </li>
                     <li className="nav-item">
@@ -128,10 +129,18 @@ function App() {
                         to="/level"
                         onClick={handleNavLinkClick}
                       >
-                       Water_Level
+                        Water_Level
+                      </NavLink>
+                    </li>{" "}
+                    <li className="nav-item">
+                      <NavLink
+                        className="nav-NavLink mx-3 p-3"
+                        to="/CamView"
+                        onClick={handleNavLinkClick}
+                      >
+                        CamView
                       </NavLink>
                     </li>
-
                     <li className="nav-item">
                       <NavLink
                         className="nav-NavLink mx-3 p-3"
@@ -155,11 +164,12 @@ function App() {
             <Route exact path="/Contacts" element={<Contacts />} />
             <Route exact path="/tds" element={<TDS />} />
             <Route exact path="/level" element={<Level />} />
+            <Route exact path="/CamView" element={<CamView />} />
           </Routes>
         </Router>
       )}
       <div className="Footer vanishIn d-flex justify-content-center">
-        Design By: <p className="Footer-text">Abdul Rahman </p>
+        Designed By: <p className="Footer-text">Abdul Rahman </p>
       </div>
     </>
   );
