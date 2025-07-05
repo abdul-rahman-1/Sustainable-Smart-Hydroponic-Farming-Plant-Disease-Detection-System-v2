@@ -1,4 +1,4 @@
-# Smart Hydroponic Farming & AI-Based Plant Disease Detection System
+# 🌱 Smart Hydroponic Farming & AI-Based Plant Disease Detection System
 
 A fully integrated, solar-powered smart hydroponic farming system enhanced with real-time IoT monitoring, automated water and nutrient control, and AI-driven plant health diagnostics. This end-to-end system is designed to optimize plant growth in controlled environments while reducing manual intervention and maximizing yield.
 
@@ -8,113 +8,101 @@ A fully integrated, solar-powered smart hydroponic farming system enhanced with 
 
 ### ✅ Real-Time Environmental Monitoring
 
-- **Temperature & Humidity**: Captured using DHT sensors on ESP32.
-- **CO₂ Levels**: Monitored to ensure air quality using MQ or NDIR sensors.
-- **Water Flow & Tank Levels**: Flow meters and ultrasonic sensors determine water circulation and volume.
-- **TDS & pH Measurement**: Real-time data on nutrient concentration and acidity for nutrient optimization.
-- **Light Intensity**: Optional sensor support for managing lighting cycles.
+* **Temperature & Humidity** – Captured using DHT sensors on ESP32.
+* **CO₂ Levels** – Monitored using MH-Z19 (NDIR sensor).
+* **Water Flow & Tank Levels** – Measured using flow meters and ultrasonic sensors.
+* **TDS & pH Monitoring** – Provides accurate nutrient and acidity levels.
+* **Light Intensity** – Measured via TSL2561 light sensor.
 
-### ⚙ Sensor Network
+### ⚙️ Sensor Network
 
-- **ESP32 Module 1**:
-  - Temperature & Humidity
-  - CO₂ Sensor
-  - Water Flow Sensor
-- **ESP32 Module 2**:
-  - Ultrasonic Sensor (Water Level)
-  - TDS Sensor
-- **NodeMCU**:
-  - Controls 2 relays:
-    - Waste water pump
-    - Nutrient delivery pump
-- **Raspberry Pi 5**:
-  - Data aggregator
-  - MongoDB interface
-  - Pi-Camera for plant image capture
+* **ESP32 Module 1**:
 
-### ⌛ Automated Data Logging
+  * DHT11 (Temperature & Humidity)
+  * MH-Z19 (CO₂ Sensor)
+  * YF-G1 (Water Flow Sensor)
+  * TSL2561 (Light Sensor)
+* **ESP32 Module 2**:
 
-- Python scripts on the Raspberry Pi:
-  - Pull data from ESP32 devices via HTTP (JSON format)
-  - Parse and log data to MongoDB
-  - Perform sanity checks and formatting
-  - Schedule data pulls at defined intervals
+  * HC-SR04 (Ultrasonic Water Level)
+  * Analog TDS Sensor
+  * Analog pH Sensor
+* **NodeMCU**:
 
-### 🚪 IoT Infrastructure
+  * 2-Relay Control:
 
-- Sensor modules send data over Wi-Fi to defined local IPs.
-- Raspberry Pi scrapes this data from the `/json` endpoint hosted by ESP modules.
-- MongoDB provides historical data tracking and analytics support.
+    * Wastewater Pump
+    * Nutrient Delivery Pump
+* **Raspberry Pi 5**:
+
+  * Python-based data aggregator
+  * Pi Camera for plant imaging
+  * MongoDB (local/cloud)
 
 ---
 
-## 📦 API & Web Dashboard
+## 📊 Automated Data Logging & Monitoring
 
-### Backend
+* Python Flask server on Raspberry Pi pulls JSON from both ESP32s.
+* MongoDB stores:
 
-- **Built With:** Node.js + Express
-- **Hosted On:** [Railway.app](https://railway.app)
-- **Endpoints Include:**
-  - `/api/sensors` - Get current sensor readings
-  - `/api/history` - Time-series sensor data
-  - `/api/image-analysis` - Trigger plant image diagnosis
+  * Latest readings
+  * 7-day rolling averages
+  * AI image prediction and accuracy
+* Fields include: Temperature, Humidity, CO₂, pH, TDS, Lux, Water Level, Flow Rate, LastUpdate, Sensor Status.
 
-### Frontend
+---
 
-- **Built With:** React.js
-- **Hosted On:** [Netlify](https://rk-iot.netlify.app)
-- **UI Components:**
-  - Real-time charts for TDS, temperature, water level, etc.
-  - Disease status with diagnostic images
-  - Alert system for threshold breach (low water, high pH, etc.)
+## 🌐 IoT Architecture
+
+* ESP32s host `/` endpoint returning JSON.
+* RPi fetches sensor values and stores them in MongoDB.
+* Node.js backend exposes APIs for dashboard frontend.
 
 ---
 
 ## 🧠 AI-Based Plant Disease Detection
 
-### Overview
+### Pipeline
 
-- **Goal:** Automatically detect plant disease symptoms using leaf images.
-- **Edge Device:** Google Coral TPU (USB Accelerator)
-- **Input:** High-resolution image from Pi Camera
-- **Preprocessing:**
-  - Resize & normalize
-  - Color histogram equalization
-- **Model:** TensorFlow Lite CNN (custom trained)
-- **Labels:**
-  - Healthy
-  - Early Blight
-  - Late Blight
-  - Nutrient Deficiency
-- **Output:** JSON with prediction class and confidence
+* **Device:** Raspberry Pi with Pi Camera
+* **Preprocessing:** Resizing, Normalization, Color Histogram Equalization
+* **Model:** TensorFlow Lite CNN
+* **Classes:**
+
+  * Healthy
+  * Early Blight
+  * Late Blight
+  * Nutrient Deficiency
+* **Output:** Predicted label + confidence
 
 ---
 
-## 🌋 Solar-Powered System
+## ☀️ Solar-Powered System
 
-### Power Control
-
-- **Input:** 12V or 24V Solar Panels
-- **Battery:** Li-ion or LiFePO4 with charge controller
-- **Monitoring:** Optional voltage/current sensor (INA219)
-- **Safety:** Relay-based emergency cutoff controlled by NodeMCU
+* **Input:** 12V/24V Solar Panel
+* **Battery:** Li-ion or LiFePO4
+* **Monitoring:** INA219 (optional)
+* **Relay Control:** NodeMCU handles auto cut-off and pump control
 
 ---
 
-## 🌎 Tech Stack
+## 🧱 Tech Stack
 
-- **Microcontrollers:** ESP32, NodeMCU
-- **SBC:** Raspberry Pi 5
-- **Languages:** Python, JavaScript, C++ (Arduino)
-- **Backend:** Node.js, Express.js
-- **Frontend:** React.js, Chart.js
-- **Database:** MongoDB (Cloud or Local)
-- **ML Framework:** TensorFlow Lite + OpenCV
-- **Cloud:** Railway (API), Netlify (Frontend)
+| Component        | Stack                             |
+| ---------------- | --------------------------------- |
+| Microcontrollers | ESP32, NodeMCU                    |
+| SBC              | Raspberry Pi 5                    |
+| Languages        | Python, JavaScript, C++ (Arduino) |
+| Frontend         | React.js, Chart.js                |
+| Backend          | Node.js + Express.js              |
+| Database         | MongoDB (Atlas or Local)          |
+| ML               | TensorFlow Lite, OpenCV           |
+| Hosting          | Netlify (Frontend), Railway (API) |
 
 ---
 
-## 📁 Directory Structure
+## 🗂️ Directory Structure
 
 ```bash
 Smart-Hydroponic-Farming-Plant-Disease-Detection-System/
@@ -140,7 +128,7 @@ Smart-Hydroponic-Farming-Plant-Disease-Detection-System/
 │   ├── middleware/
 │   └── utils/
 │
-├── ml/                      # Machine learning pipeline
+├── ml/                      # AI/ML pipeline
 │   ├── model/
 │   └── scripts/
 │       ├── preprocess.py
@@ -157,16 +145,16 @@ Smart-Hydroponic-Farming-Plant-Disease-Detection-System/
 
 ---
 
-## 🔧 Installation
+## ⚙️ Installation & Setup
 
-### Clone the Repository
+### 🔀 Clone the Repository
 
 ```bash
 git clone https://github.com/abdul-rahman-1/Smart-Hydroponic-Farming-Plant-Disease-Detection-System.git
 cd Smart-Hydroponic-Farming-Plant-Disease-Detection-System
 ```
 
-### Backend Setup
+### 🚀 Backend Setup
 
 ```bash
 cd server
@@ -175,7 +163,7 @@ npm install
 npm start
 ```
 
-### Frontend Setup
+### 🎯 Frontend Setup
 
 ```bash
 cd client
@@ -183,13 +171,7 @@ npm install
 npm run dev
 ```
 
-### Microcontroller Firmware
-
-- Open `.ino` files in Arduino IDE
-- Update Wi-Fi credentials
-- Upload to ESP32/NodeMCU boards
-
-### Machine Learning (Optional)
+### 🧠 ML Setup (Optional)
 
 ```bash
 cd ml
@@ -197,20 +179,31 @@ pip install -r requirements.txt
 python scripts/train.py
 ```
 
+### 📡 Microcontroller Firmware
+
+* Open `.ino` files in Arduino IDE
+* Update Wi-Fi credentials
+* Upload to respective ESP32 / NodeMCU
+
 ---
 
 ## 🌐 Live Demo
 
-- **Web App**: [rk-iot.netlify.app](https://rk-iot.netlify.app)
-- **API**: [rk-server.up.railway.app](https://rk-server.up.railway.app)
+* **Web App:** [rk-iot.netlify.app](https://rk-iot.netlify.app)
+* **API Server:** [rk-server.up.railway.app](https://rk-server.up.railway.app)
 
 ---
 
 ## 📄 License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
-🌟 **Empowering smart agriculture with AI and IoT.** 🌟
+## 📢 Acknowledgments
 
+Special thanks to the open-source community and contributors who made this project possible.
+
+---
+
+> 🌟 Empowering agriculture with smart IoT and AI-driven plant care. 🌟
