@@ -15,8 +15,8 @@ const char* password = "7518888786";
 #define RX_PIN 33      // MH-Z19 Tx pin
 #define TX_PIN 32      // MH-Z19 Rx pin
 #define FLOW_PIN 22    // YF-G1 signal pin
-#define SDA_PIN 16     // TSL2561 SDA
-#define SCL_PIN 17     // TSL2561 SCL
+#define SDA_PIN 17     // TSL2561 SDA   on main boad revers the light sensor connections 
+#define SCL_PIN 16     // TSL2561 SCL
 #define BAUDRATE 9600  // MH-Z19 baud rate
 
 // --- Objects ---

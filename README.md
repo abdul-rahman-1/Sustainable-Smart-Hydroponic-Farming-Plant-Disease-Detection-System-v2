@@ -1,6 +1,6 @@
 # 🌱 Smart Hydroponic Farming & AI-Based Plant Disease Detection System
 
-A fully integrated, solar-powered smart hydroponic farming system enhanced with real-time IoT monitoring, automated water and nutrient control, and AI-driven plant health diagnostics. This end-to-end system is designed to optimize plant growth in controlled environments while reducing manual intervention and maximizing yield.
+A fully integrated, **solar-powered**, **AI-enhanced smart farming system** designed for sustainable agriculture. This system combines **IoT sensor networks**, **automated irrigation**, **real-time monitoring**, and **AI-based plant health detection** to maximize yield with minimal manual intervention.
 
 ---
 
@@ -8,65 +8,63 @@ A fully integrated, solar-powered smart hydroponic farming system enhanced with 
 
 ### ✅ Real-Time Environmental Monitoring
 
-* **Temperature & Humidity** – Captured using DHT sensors on ESP32.
-* **CO₂ Levels** – Monitored using MH-Z19 (NDIR sensor).
-* **Water Flow & Tank Levels** – Measured using flow meters and ultrasonic sensors.
-* **TDS & pH Monitoring** – Provides accurate nutrient and acidity levels.
-* **Light Intensity** – Measured via TSL2561 light sensor.
+* 🌡️ **Temperature & Humidity** – DHT11 sensor on ESP32-1
+* 🫁 **CO₂ Monitoring** – MH-Z19 sensor
+* 💧 **Water Flow & Level** – YF-G1 Flow Sensor & HC-SR04 Ultrasonic Sensor
+* 🌊 **Nutrient & pH Tracking** – TDS + Analog pH Sensor
+* 🌞 **Light Intensity** – TSL2561 Sensor
 
 ### ⚙️ Sensor Network
 
-* **ESP32 Module 1**:
+**ESP32 #1:**
 
-  * DHT11 (Temperature & Humidity)
-  * MH-Z19 (CO₂ Sensor)
-  * YF-G1 (Water Flow Sensor)
-  * TSL2561 (Light Sensor)
-* **ESP32 Module 2**:
+* DHT11 (Temp & Humidity)
+* MH-Z19 (CO₂)
+* YF-G1 (Flow Rate)
+* TSL2561 (Lux)
 
-  * HC-SR04 (Ultrasonic Water Level)
-  * Analog TDS Sensor
-  * Analog pH Sensor
-* **NodeMCU**:
+**ESP32 #2:**
 
-  * 2-Relay Control:
+* HC-SR04 (Water Level)
+* Analog TDS Sensor
+* Analog pH Sensor
 
-    * Wastewater Pump
-    * Nutrient Delivery Pump
-* **Raspberry Pi 5**:
+**ESP32 #3:**
 
-  * Python-based data aggregator
-  * Pi Camera for plant imaging
-  * MongoDB (local/cloud)
+* Dual-Relay Module (Controls Nutrient & Wastewater Pumps)
+
+**📸 Raspberry Pi 5:**
+
+* Aggregates all sensor data
+* Controls stepper motor for Pi Camera slider
+* Hosts Flask server
+* Runs AI Model for Disease Detection
+* Stores results and 64-bit image in MongoDB
 
 ---
 
 ## 📊 Automated Data Logging & Monitoring
 
-* Python Flask server on Raspberry Pi pulls JSON from both ESP32s.
-* MongoDB stores:
+* Python Flask server on Raspberry Pi fetches JSON data from ESP32s.
 
-  * Latest readings
-  * 7-day rolling averages
-  * AI image prediction and accuracy
-* Fields include: Temperature, Humidity, CO₂, pH, TDS, Lux, Water Level, Flow Rate, LastUpdate, Sensor Status.
+* MongoDB (Atlas) stores:
 
----
+  * ✅ Latest Sensor Readings
+  * 📈 7-Day Rolling Averages
+  * 🧠 AI Predictions (Label + Confidence)
+  * 📸 Base64 Camera Images
 
-## 🌐 IoT Architecture
-
-* ESP32s host `/` endpoint returning JSON.
-* RPi fetches sensor values and stores them in MongoDB.
-* Node.js backend exposes APIs for dashboard frontend.
+* Fields include:
+  `Temperature`, `Humidity`, `CO₂`, `FlowRate`, `Lux`, `Level`, `TDS`, `pH`, `SensorStatus`, `LastUpdate`
 
 ---
 
 ## 🧠 AI-Based Plant Disease Detection
 
-### Pipeline
+### 🔬 ML Pipeline
 
-* **Device:** Raspberry Pi with Pi Camera
-* **Preprocessing:** Resizing, Normalization, Color Histogram Equalization
+* **Input:** Real-time Pi Camera image
+* **Preprocessing:** Resize → Normalize → Histogram Equalization
 * **Model:** TensorFlow Lite CNN
 * **Classes:**
 
@@ -74,16 +72,89 @@ A fully integrated, solar-powered smart hydroponic farming system enhanced with 
   * Early Blight
   * Late Blight
   * Nutrient Deficiency
-* **Output:** Predicted label + confidence
+* **Output:** Class + Confidence Score
+* **Storage:** MongoDB (Base64 image + prediction)
 
 ---
 
-## ☀️ Solar-Powered System
+## 🌐 System Architecture
 
-* **Input:** 12V/24V Solar Panel
-* **Battery:** Li-ion or LiFePO4
-* **Monitoring:** INA219 (optional)
-* **Relay Control:** NodeMCU handles auto cut-off and pump control
+```mermaid
+flowchart TD
+
+    subgraph Sensors
+        DHT11[DHT11 - Temp & Humidity]
+        CO2[MH-Z19 - CO₂ Sensor]
+        Flow[YF-G1 - Flow Sensor]
+        Light[TSL2561 - Lux Sensor]
+        pH[pH Sensor]
+        TDS[TDS Sensor]
+        Level[Ultrasonic - Water Level]
+    end
+
+    subgraph ESP32 Modules
+        ESP1[ESP32 #1 - Env Data]
+        ESP2[ESP32 #2 - Water Quality]
+        ESP3[ESP32 #3 - Pump Control]
+    end
+
+    subgraph RPi5[📦 Raspberry Pi 5]
+        Flask[Flask Server]
+        ML[AI Model]
+        Cam[Pi Camera]
+        Motor[Stepper Motor Driver]
+    end
+
+    Mongo[MongoDB Atlas]
+    API[Railway Express API]
+    Web[🌐 rk-iot.netlify.app]
+
+    %% Connections
+    DHT11 --> ESP1
+    CO2 --> ESP1
+    Flow --> ESP1
+    Light --> ESP1
+
+    TDS --> ESP2
+    pH --> ESP2
+    Level --> ESP2
+
+    ESP1 -->|JSON| Flask
+    ESP2 -->|JSON| Flask
+    ESP3 -->|Control| Flask
+    Cam --> ML --> Flask
+    Flask --> Mongo --> API --> Web
+    RPi5 --> Motor --> Cam
+```
+
+📸 **Circuit Diagrams & Screenshots:**
+
+| Image                                                          | Description                          |
+| -------------------------------------------------------------- | ------------------------------------ |
+| ![ESP Circuit](https://rk-iot.netlify.app/assets/assets/1.jpg) | Sensor Circuit Diagram (ESP1 + ESP2) |
+| ![UI](https://rk-iot.netlify.app/assets/assets/2.png)          | Dashboard - Sensor View              |
+| ![UI](https://rk-iot.netlify.app/assets/assets/3.png)          | Dashboard - Averages Graph           |
+| ![UI](https://rk-iot.netlify.app/assets/assets/4.png)          | Dashboard - pH & TDS                 |
+| ![DFD](https://rk-iot.netlify.app/assets/assets/5.png)         | Data Flow Diagram                    |
+| ![Power](https://rk-iot.netlify.app/assets/assets/6.png)       | Power System Diagram                 |
+
+---
+
+## ☀️ Solar Power System
+
+* 🔋 **2x Loom 20W 12V Solar Panels**
+
+  * One directly powers the system (daytime).
+  * Second charges 2x 12V 6Ah Li-ion batteries via 20A Solar Charge Controller.
+* 🔌 Power routed through **12V Relay System** with auto switch logic.
+* Buck converters:
+
+  * **5V 4A Converter #1** – ESP32s
+  * **5V 4A Converter #2** – Raspberry Pi
+* Raspberry Pi GPIO controls:
+
+  * Pump Relay (via ESP32 #3)
+  * Stepper Motor Driver (camera slider)
 
 ---
 
@@ -96,7 +167,7 @@ A fully integrated, solar-powered smart hydroponic farming system enhanced with 
 | Languages        | Python, JavaScript, C++ (Arduino) |
 | Frontend         | React.js, Chart.js                |
 | Backend          | Node.js + Express.js              |
-| Database         | MongoDB (Atlas or Local)          |
+| Database         | MongoDB (Atlas Cloud)             |
 | ML               | TensorFlow Lite, OpenCV           |
 | Hosting          | Netlify (Frontend), Railway (API) |
 
@@ -183,14 +254,14 @@ python scripts/train.py
 
 * Open `.ino` files in Arduino IDE
 * Update Wi-Fi credentials
-* Upload to respective ESP32 / NodeMCU
+* Upload to ESP32 or NodeMCU
 
 ---
 
 ## 🌐 Live Demo
 
-* **Web App:** [rk-iot.netlify.app](https://rk-iot.netlify.app)
-* **API Server:** [rk-server.up.railway.app](https://rk-server.up.railway.app)
+* **Web Dashboard:** [rk-iot.netlify.app](https://rk-iot.netlify.app)
+* **API Endpoint:** [rk-server.up.railway.app/api/data](https://rk-server.up.railway.app/api/data)
 
 ---
 
@@ -200,10 +271,10 @@ MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
-## 📢 Acknowledgments
+## 🙌 Acknowledgments
 
-Special thanks to the open-source community and contributors who made this project possible.
+Special thanks to open-source contributors and community mentors.
 
 ---
 
-> 🌟 Empowering agriculture with smart IoT and AI-driven plant care. 🌟
+> 🌿 Empowering agriculture with smart IoT and edge AI. Let plants speak, we listen. 🌿
