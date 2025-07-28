@@ -131,12 +131,12 @@ flowchart TD
 
 | Image                                                          | Description                          |
 | -------------------------------------------------------------- | ------------------------------------ |
-| ![ESP Circuit](https://rk-iot.netlify.app/assets/assets/1.jpg) | Sensor Circuit Diagram (ESP1 + ESP2) |
-| ![UI](https://rk-iot.netlify.app/assets/assets/2.png)          | Dashboard - Sensor View              |
-| ![UI](https://rk-iot.netlify.app/assets/assets/3.png)          | Dashboard - Averages Graph           |
-| ![UI](https://rk-iot.netlify.app/assets/assets/4.png)          | Dashboard - pH & TDS                 |
-| ![DFD](https://rk-iot.netlify.app/assets/assets/5.png)         | Data Flow Diagram                    |
-| ![Power](https://rk-iot.netlify.app/assets/assets/6.png)       | Power System Diagram                 |
+| ![ESP Circuit](https://rk-iot.netlify.app/images/1.jpg) | Sensor Circuit Diagram (ESP1 + ESP2) |
+| ![UI](https://rk-iot.netlify.app/images/2.png)          | Dashboard - Sensor View              |
+| ![UI](https://rk-iot.netlify.app/images/3.png)          | Dashboard - Averages Graph           |
+| ![UI](https://rk-iot.netlify.app/images/4.png)          | Dashboard - pH & TDS                 |
+| ![DFD](https://rk-iot.netlify.app/images/5.png)         | Data Flow Diagram                    |
+| ![Power](https://rk-iot.netlify.app/images/6.png)       | Power System Diagram                 |
 
 ---
 
