@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Chart from "chart.js/auto";
-
+const SERV_KEY = import.meta.env.VITE_REACT_KEY;
+console.log("aa:"+SERV_KEY);
 function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
   const [sensorStatus, setSensorStatus] = useState("Loading...");
   const [lastValue, setLastValue] = useState("N/A");
@@ -38,12 +39,11 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
       },
     });
   };
-
   const fetchSensorData = async () => {
     try {
-      const res = await fetch("https://rk-server.up.railway.app/api/data", {
+      const res = await fetch("http://127.0.0.1:3000/api/data", {
         headers: {
-          serv: "aosrhglakjhfglkjahrsoutyapow448097539208475908274dilfhgjalsh24jthwkljhlkjhw45th3lkj5h34lkj5h32lk4jhlkjhqlwekjrhtlkjwh35M",
+          serv: SERV_KEY,
         },
       });
       const data = await res.json();
@@ -103,9 +103,7 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
       };
     });
 
-    setLastValue(
-      avgData.length ? `${avgData.at(-1).value} ${unit}` : "N/A"
-    );
+    setLastValue(avgData.length ? `${avgData.at(-1).value} ${unit}` : "N/A");
 
     if (chartRef.current) {
       chartRef.current.data.labels = avgData.map((i) => i.time);
