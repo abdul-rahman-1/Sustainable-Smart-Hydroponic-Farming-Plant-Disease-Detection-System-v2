@@ -10,7 +10,7 @@ function CamView() {
   const fetchCamData = async () => {
     try {
       const res = await fetch(
-        "https://rk-server.up.railway.app/api/data",
+        "https://api-server-ab9a.onrender.com/api/data",
         { headers: { serv: "aosrhglakjhfglkjahrsoutyapow448097539208475908274dilfhgjalsh24jthwkljhlkjhw45th3lkj5h34lkj5h32lk4jhlkjhqlwekjrhtlkjwh35M" } }
       );
       

@@ -41,7 +41,7 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
   };
   const fetchSensorData = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:3000/api/data", {
+      const res = await fetch("https://api-server-ab9a.onrender.com/api/data", {
         headers: {
           serv: SERV_KEY,
         },
