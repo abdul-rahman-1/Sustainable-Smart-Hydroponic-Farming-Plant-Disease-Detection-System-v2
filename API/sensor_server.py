@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -9,43 +8,32 @@ from datetime import datetime
 load_dotenv(".env")
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-# Environment configuration
-PORT = int(os.getenv("SENSOR_PORT", 3001))
+# ------------------ Configuration ------------------
+PORT = int(os.getenv("SENSOR_PORT"))
 SERV = os.getenv("SERV")
 MONGO = os.getenv("MONGODB_URL")
 
-# ------------------ Utility Functions ------------------
-
+# ------------------ Helpers ------------------
 def get_client():
-    """Create a new MongoDB client connection."""
+    """Create MongoDB connection."""
     return MongoClient(MONGO)
 
 def check_auth():
-    """Check if the provided 'serv' key matches the secret key."""
+    """Verify API key."""
     return request.headers.get("serv") == SERV
 
 # ------------------ Routes ------------------
 
-@app.route("/cron")
-def cron():
-    """Simple cron route to check MongoDB connection."""
-    try:
-        with get_client() as c:
-            dbs = c.list_database_names()
-        print(f"[CRON] OK {dbs}")
-        return jsonify({
-            "cron": "ok",
-            "dbs": dbs,
-            "time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Simple health check endpoint."""
+    return jsonify({"status": "ok", "time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")}), 200
+
 
 @app.route("/api/data", methods=["GET"])
 def get_sensor_data():
-    """Fetch all sensor values excluding heavy plant/image fields."""
+    """Fetch all sensor values excluding plant/image fields."""
     if not check_auth():
         return jsonify({"error": "Unauthorized"}), 401
 
@@ -53,7 +41,7 @@ def get_sensor_data():
         with get_client() as client:
             db = client["Sensor"]
 
-            # Projection: exclude all plant fields for performance
+            # Projection: exclude plant data for performance
             projection = {
                 "_id": 0,
                 "Plant_1": 0,
@@ -64,7 +52,6 @@ def get_sensor_data():
             }
 
             data = db["Data"].find_one({}, projection)
-
             if not data:
                 return jsonify({"error": "No data found"}), 404
 
@@ -75,7 +62,7 @@ def get_sensor_data():
         print(f"[ERROR:/api/data] {e}")
         return jsonify({"error": "Internal Server Error"}), 500
 
-# ------------------ Run Server ------------------
 
+# ------------------ Main ------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT, debug=True)
