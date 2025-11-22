@@ -1,21 +1,22 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Chart from "chart.js/auto";
-const SERV_KEY = import.meta.env.VITE_REACT_KEY;
-console.log("aa:"+SERV_KEY);
+import { useData } from "../context/DataContext";
+
 function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
-  const [sensorStatus, setSensorStatus] = useState("Loading...");
+  const { payload, status, lastUpdateTime, parseAvgString } = useData();
+
   const [lastValue, setLastValue] = useState("N/A");
-  const [lastUpdateTime, setLastUpdateTime] = useState("Loading...");
+  const [sensorStatus, setSensorStatus] = useState("Loading...");
 
-  const ctx = useRef(null);
+  const canvasRef = useRef(null);
   const chartRef = useRef(null);
-  const previousStatus = useRef(sensorStatus);
+  const prevStatus = useRef(null);
 
+  // init chart
   const initChart = () => {
-    if (chartRef.current) {
-      chartRef.current.destroy();
-    }
-    chartRef.current = new Chart(ctx.current, {
+    if (!canvasRef.current) return;
+    chartRef.current?.destroy();
+    chartRef.current = new Chart(canvasRef.current, {
       type: "line",
       data: {
         labels: [],
@@ -27,118 +28,90 @@ function SensorData({ label, dataKey, avgKey, chartColor, unit }) {
             backgroundColor: chartColor.replace("1)", "0.2)"),
             fill: true,
             borderWidth: 2,
+            tension: 0.3,
           },
         ],
       },
       options: {
         responsive: true,
+        animation: false,
         scales: {
           x: { title: { display: true, text: "Time" } },
           y: { title: { display: true, text: `${label} (${unit})` } },
         },
+        plugins: { legend: { display: false } },
       },
     });
   };
-  const fetchSensorData = async () => {
-    try {
-      const res = await fetch("https://api-server-ab9a.onrender.com/api/data", {
-        headers: {
-          serv: SERV_KEY,
-        },
-      });
-      const data = await res.json();
-      const payload = data[0] || {};
-      const currentStatus = payload.Sensor || "Offline";
 
-      if (
-        currentStatus === "Online" &&
-        ["Offline", "Error_Offline"].includes(previousStatus.current)
-      ) {
-        initChart();
-      }
-      previousStatus.current = currentStatus;
-      setSensorStatus(currentStatus);
-
-      // Set last update
-      if (payload.LastUpdate) {
-        const { Date: dt, Time: tm } = payload.LastUpdate;
-        setLastUpdateTime(`${dt || "N/A"} ${tm || "N/A"}`);
-      }
-
-      if (currentStatus === "Online") {
-        const value = payload[dataKey];
-        setLastValue(value != null ? value : "N/A");
-        updateChart(value);
-      } else {
-        handleOfflineStatus(payload);
-      }
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      setSensorStatus("Error");
-      setLastUpdateTime("N/A");
-      setLastValue("N/A");
+  const pushPoint = (value) => {
+    if (!chartRef.current || value == null) return;
+    const t = new Date().toLocaleTimeString();
+    const ds = chartRef.current.data.datasets[0];
+    chartRef.current.data.labels.push(t);
+    ds.data.push(value);
+    if (ds.data.length > 20) {
+      chartRef.current.data.labels.shift();
+      ds.data.shift();
     }
+    chartRef.current.update("none");
   };
 
-  const updateChart = (value) => {
-    if (chartRef.current && value != null) {
-      const t = new Date().toLocaleTimeString();
-      chartRef.current.data.labels.push(t);
-      chartRef.current.data.datasets[0].data.push(value);
-      if (chartRef.current.data.labels.length > 10) {
-        chartRef.current.data.labels.shift();
-        chartRef.current.data.datasets[0].data.shift();
-      }
-      chartRef.current.update();
-    }
+  const showOfflineAvg = (p) => {
+    const avg = parseAvgString(p?.[avgKey] || "");
+    const labels = avg.map((i) => i.time);
+    const values = avg.map((i) => i.value);
+    chartRef.current.data.labels = labels;
+    chartRef.current.data.datasets[0].data = values;
+    chartRef.current.update("none");
+    if (values.length) setLastValue(values.at(-1));
+    else setLastValue("N/A");
   };
 
-  const handleOfflineStatus = (payload) => {
-    const avgRaw = payload[avgKey] || "";
-    const avgData = avgRaw.split(",").map((entry) => {
-      const [val, tm] = entry.split(":");
-      return {
-        value: parseFloat(val),
-        time: tm || "Unknown",
-      };
-    });
-
-    setLastValue(avgData.length ? `${avgData.at(-1).value} ${unit}` : "N/A");
-
-    if (chartRef.current) {
-      chartRef.current.data.labels = avgData.map((i) => i.time);
-      chartRef.current.data.datasets[0].data = avgData.map((i) => i.value);
-      chartRef.current.update();
-    }
-  };
-
+  // initialize chart once
   useEffect(() => {
     initChart();
-    const iv = setInterval(fetchSensorData, 2000);
-    return () => {
-      clearInterval(iv);
-      chartRef.current?.destroy();
-    };
+    return () => chartRef.current?.destroy();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // react to global payload/status updates
+  useEffect(() => {
+    setSensorStatus(status || "Offline");
+    if (!payload) return;
+
+    const currentStatus = status;
+    const was = prevStatus.current;
+
+    // re-init when coming back online
+    if (currentStatus === "Online" && (was === "Offline" || was === "Error" || was === null)) {
+      initChart();
+    }
+    prevStatus.current = currentStatus;
+
+    if (currentStatus === "Online") {
+      const val = payload?.[dataKey];
+      setLastValue(val ?? "N/A");
+      pushPoint(val);
+    } else {
+      showOfflineAvg(payload);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payload, status]);
 
   return (
     <div className="App temp">
       <div className="row cont">
         <div className="text col-md-4">
           <h1>{label} Sensor Data</h1>
+          <div><strong>Sensor Status:</strong> {sensorStatus}</div>
+          <div><strong>Last Update Time:</strong> {lastUpdateTime}</div>
           <div>
-            <strong>Sensor Status:</strong> {sensorStatus}
-          </div>
-          <div>
-            <strong>Last Update Time:</strong> {lastUpdateTime}
-          </div>
-          <div>
-            <strong>Last {label}:</strong> {lastValue}{" "}
-            {sensorStatus === "Online" ? unit : ""}
+            <strong>Last {label}:</strong> {lastValue} {sensorStatus === "Online" ? unit : ""}
           </div>
         </div>
         <div className="col-md-8">
-          <canvas ref={ctx}></canvas>
+          <canvas ref={canvasRef}></canvas>
         </div>
       </div>
     </div>

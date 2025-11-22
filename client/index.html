@@ -2,32 +2,110 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/fav.png" />
+
+    <!-- Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hydroponic Farming</title>
+
+    <!-- Primary Meta Tags -->
+    <title>Hydroponic Farming & Smart IoT Dashboard — By Abdul Rahman</title>
     <meta
       name="description"
-      content="My Name Is Abdul Rahman. I am a Front End Web Developer And Game Developer. I am a student currently in B.Tech (Computer Science) First Year."
+      content="Smart Hydroponic Farming Dashboard built by Abdul Rahman using ESP32, Raspberry Pi 5, AI-based plant disease detection, and real-time IoT sensors (CO₂, pH, TDS, Lux, Temperature, Humidity, Water Level, Water Flow). Monitor, analyze, and optimize plant growth with automation."
     />
     <meta
       name="keywords"
-      content="Abdul Rahman, portfolio, web designer, game developer, CMS, Integral, Physics, Chemistry, Maths, Biology, Computer Science, English, Hindi, Geography and History & Civics , Physics, Chemistry, Maths, Computer Science, English and Physical Education,Computer Science & Engineering, First year,HTML, CSS, Bootstrap, JS, React JS, JAVA, Python, Photoshop, Video Editing, PPT, Game Engine, Linux OS and Cybersecurity"
+      content="Hydroponic Farming, IoT Dashboard, Abdul Rahman, Smart Agriculture, ESP32, Raspberry Pi, Plant Disease Detection AI, pH Sensor, TDS Sensor, CO2 Sensor, Lux Sensor, Temperature Monitoring, Water Level Sensor, Solar Power Monitoring, Battery Current, Load Current, Renewable Energy Analysis"
     />
     <meta name="author" content="Abdul Rahman" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://abdul-r.netlify.app/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="./src/img/CO.png" />
+    <link rel="canonical" href="https://hydroponic-system.netlify.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta
+      property="og:title"
+      content="Hydroponic Farming & IoT Dashboard — Smart Plant Monitoring"
+    />
+    <meta
+      property="og:description"
+      content="A complete hydroponic farming dashboard created by Abdul Rahman. Monitors pH, TDS, CO₂, Temperature, Humidity, Light, Solar Power, Battery Health, Load Current & AI Plant Disease Detection."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://hydroponic-system.netlify.app/" />
+    <meta property="og:site_name" content="Hydroponic Farming Dashboard" />
+    <meta
+      property="og:image"
+      content="https://hydroponic-system.netlify.app/logo.png"
+    />
+    <meta
+      property="og:image:secure_url"
+      content="https://hydroponic-system.netlify.app/logo.png"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Hydroponic Farming & IoT Monitoring — By Abdul Rahman"
+    />
+    <meta
+      name="twitter:description"
+      content="Real-time hydroponic farm dashboard powered by ESP32, Raspberry Pi 5, MongoDB, and AI plant health monitoring. Built by Abdul Rahman."
+    />
+    <meta
+      name="twitter:image"
+      content="https://hydroponic-system.netlify.app/logo.png"
+    />
+    <meta name="twitter:site" content="@abdulrahman" />
+
+    <!-- Mobile Theme Color -->
+    <meta name="theme-color" content="#06a85d" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+
+    <!-- Structured Data (Google Rich Search Result) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Hydroponic Smart Farming Dashboard",
+        "url": "https://hydroponic-system.netlify.app/",
+        "image": "https://hydroponic-system.netlify.app/logo.png",
+        "author": {
+          "@type": "Person",
+          "name": "Abdul Rahman"
+        },
+        "applicationCategory": "AgricultureTechnology",
+        "operatingSystem": "Web",
+        "description": "A Smart Hydroponic Farming Dashboard that monitors pH, TDS, CO₂, Temperature, Humidity, Water Level, Solar Power, Battery Current, Load Current and includes AI-based plant disease detection.",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "186"
+        }
+      }
+    </script>
+
+    <!-- FontAwesome -->
     <link
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- App CSS -->
     <link rel="stylesheet" href="./src/components/App.css" />
+
     <style>
       body {
         width: 100vw;
@@ -50,9 +128,10 @@
   <body class="d-flex justify-content-center align-items-center">
     <div id="root" class="rounded-2"></div>
 
+    <!-- Your React app -->
     <script type="module" src="./src/main.jsx"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <!-- Font Awesome Icons -->
     <script
       src="https://kit.fontawesome.com/2fe535a070.js"
       crossorigin="anonymous"

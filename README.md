@@ -1,280 +1,147 @@
-# 🌱 Smart Hydroponic Farming & AI-Based Plant Disease Detection System
-
-A fully integrated, **solar-powered**, **AI-enhanced smart farming system** designed for sustainable agriculture. This system combines **IoT sensor networks**, **automated irrigation**, **real-time monitoring**, and **AI-based plant health detection** to maximize yield with minimal manual intervention.
+# 🌿 LeafGuard — Smart IoT-Based Hydroponic Plant Monitoring & AI Disease Detection
 
 ---
 
-## 🚀 Key Features
+## Overview
 
-### ✅ Real-Time Environmental Monitoring
+LeafLens is an advanced AI and computer vision project designed to identify diseases in plant leaves using image analysis. It empowers farmers, horticulturists, and researchers to detect plant diseases early, preventing crop loss and optimizing agricultural productivity.
 
-* 🌡️ **Temperature & Humidity** – DHT11 sensor on ESP32-1
-* 🫁 **CO₂ Monitoring** – MH-Z19 sensor
-* 💧 **Water Flow & Level** – YF-G1 Flow Sensor & HC-SR04 Ultrasonic Sensor
-* 🌊 **Nutrient & pH Tracking** – TDS + Analog pH Sensor
-* 🌞 **Light Intensity** – TSL2561 Sensor
-
-### ⚙️ Sensor Network
-
-**ESP32 #1:**
-
-* DHT11 (Temp & Humidity)
-* MH-Z19 (CO₂)
-* YF-G1 (Flow Rate)
-* TSL2561 (Lux)
-
-**ESP32 #2:**
-
-* HC-SR04 (Water Level)
-* Analog TDS Sensor
-* Analog pH Sensor
-
-**ESP32 #3:**
-
-* Dual-Relay Module (Controls Nutrient & Wastewater Pumps)
-
-**📸 Raspberry Pi 5:**
-
-* Aggregates all sensor data
-* Controls stepper motor for Pi Camera slider
-* Hosts Flask server
-* Runs AI Model for Disease Detection
-* Stores results and 64-bit image in MongoDB
+The system combines **AI-based image processing**, **real-time webcam input**, and a **modular pipeline** for data preprocessing, training, testing, and inference.
 
 ---
 
-## 📊 Automated Data Logging & Monitoring
+## 🧩 Problem Statement
 
-* Python Flask server on Raspberry Pi fetches JSON data from ESP32s.
+Plant diseases pose a serious threat to global agriculture, often leading to significant crop loss. Early detection is challenging due to:
 
-* MongoDB (Atlas) stores:
+* Lack of accessible diagnostic tools for farmers
+* Visual similarity between healthy and diseased leaves
+* Delays in laboratory testing
 
-  * ✅ Latest Sensor Readings
-  * 📈 7-Day Rolling Averages
-  * 🧠 AI Predictions (Label + Confidence)
-  * 📸 Base64 Camera Images
-
-* Fields include:
-  `Temperature`, `Humidity`, `CO₂`, `FlowRate`, `Lux`, `Level`, `TDS`, `pH`, `SensorStatus`, `LastUpdate`
+**LeafLens** solves this by providing instant, AI-driven diagnosis from leaf images, enabling prompt intervention.
 
 ---
 
-## 🧠 AI-Based Plant Disease Detection
+## 🎯 Objectives
 
-### 🔬 ML Pipeline
-
-* **Input:** Real-time Pi Camera image
-* **Preprocessing:** Resize → Normalize → Histogram Equalization
-* **Model:** TensorFlow Lite CNN
-* **Classes:**
-
-  * Healthy
-  * Early Blight
-  * Late Blight
-  * Nutrient Deficiency
-* **Output:** Class + Confidence Score
-* **Storage:** MongoDB (Base64 image + prediction)
+1. Build a robust AI model for classifying plant leaf diseases.
+2. Enable live testing through camera input for real-time detection.
+3. Provide a comprehensive pipeline: preprocessing → training → validation → inference.
+4. Allow future scalability and integration with web, mobile, or cloud applications.
 
 ---
 
-## 🌐 System Architecture
+## ⚙️ Technical Workflow
 
-```mermaid
-flowchart TD
+### 1. Data Preprocessing
 
-    subgraph Sensors
-        DHT11[DHT11 - Temp & Humidity]
-        CO2[MH-Z19 - CO₂ Sensor]
-        Flow[YF-G1 - Flow Sensor]
-        Light[TSL2561 - Lux Sensor]
-        pH[pH Sensor]
-        TDS[TDS Sensor]
-        Level[Ultrasonic - Water Level]
-    end
+* Collection of leaf images from datasets (e.g., PlantVillage) or custom captures.
+* Image augmentation: rotation, flipping, scaling to enhance model generalization.
+* Normalization and resizing to fit the input requirements of the neural network.
+* Splitting dataset into training, validation, and testing sets.
 
-    subgraph ESP32 Modules
-        ESP1[ESP32 #1 - Env Data]
-        ESP2[ESP32 #2 - Water Quality]
-        ESP3[ESP32 #3 - Pump Control]
-    end
+### 2. Model Training
 
-    subgraph RPi5[📦 Raspberry Pi 5]
-        Flask[Flask Server]
-        ML[AI Model]
-        Cam[Pi Camera]
-        Motor[Stepper Motor Driver]
-    end
+* Convolutional Neural Network (CNN) architecture used for feature extraction and classification.
+* Training conducted in Jupyter notebooks with frameworks like TensorFlow/Keras or PyTorch.
+* Metrics monitored: accuracy, loss, precision, recall.
+* Techniques applied: dropout, batch normalization, and data augmentation to reduce overfitting.
 
-    Mongo[MongoDB Atlas]
-    API[Railway Express API]
-    Web[🌐 rk-iot.netlify.app]
+### 3. Testing & Inference
 
-    %% Connections
-    DHT11 --> ESP1
-    CO2 --> ESP1
-    Flow --> ESP1
-    Light --> ESP1
+* Notebook/script-based inference on unseen images.
+* Real-time webcam feed integration (via `TEST-cam.py`) for live prediction.
+* Predictions include:
 
-    TDS --> ESP2
-    pH --> ESP2
-    Level --> ESP2
+  * Disease label
+  * Confidence percentage
+  * Signal indicator: Green (Healthy), Yellow (Moderate), Red (Severe)
 
-    ESP1 -->|JSON| Flask
-    ESP2 -->|JSON| Flask
-    ESP3 -->|Control| Flask
-    Cam --> ML --> Flask
-    Flask --> Mongo --> API --> Web
-    RPi5 --> Motor --> Cam
+### 4. User Interaction
+
+* Minimal interface via scripts or notebooks.
+* Future-ready for web or mobile UI integration.
+
+---
+
+## 🌟 Achievements
+
+* Successfully trained a CNN model for leaf disease classification.
+* Enabled **real-time prediction** using live camera feed.
+* Modular and extensible code structure for research or deployment.
+* Demonstrated integration of preprocessing, training, testing, and inference in one workflow.
+
+---
+
+## 📊 Challenges & Insights
+
+* **Data Imbalance**: Certain diseases had fewer samples, addressed via augmentation.
+* **Overfitting vs Generalization**: Regularization techniques and careful training mitigated overfitting.
+* **Real-Time Inference**: Optimization of preprocessing and model inference for live webcam detection.
+* **Bridging Research & Application**: Adapting notebook code into reusable scripts for real-world use.
+
+---
+
+## 🔮 Future Enhancements
+
+* **User-Friendly UI**: Web or mobile interface for farmer-friendly operation.
+* **Cloud Integration**: API for scalable, multi-device usage.
+* **Expanded Dataset**: More plants, diseases, and environmental conditions.
+* **Edge Deployment**: Lightweight models for mobile/offline usage.
+* **Explainability**: Grad-CAM or saliency maps for visual explanations of predictions.
+* **Actionable Advice**: Post-diagnosis suggestions for treatment and prevention.
+
+---
+
+## 🏆 Impact
+
+LeafLens enables:
+
+* Faster disease diagnosis for healthier crops
+* Reduced use of unnecessary chemicals
+* Data-driven farming decisions
+* Enhanced yield and agricultural efficiency
+
+---
+
+## 📌 Key Takeaways
+
+* AI can significantly assist in agriculture and plant health.
+* Modular and well-documented pipelines ensure reproducibility and scalability.
+* Early detection is critical to preventing crop loss.
+
+---
+
+## 🎨 Visual Representation
+
+```
+[ Leaf Image ] ---> [ Preprocessing ] ---> [ CNN Model ] ---> [ Prediction ] ---> [ Label + Confidence + Signal ]
 ```
 
-📸 **Circuit Diagrams & Screenshots:**
-
-| Image                                                          | Description                          |
-| -------------------------------------------------------------- | ------------------------------------ |
-| ![ESP Circuit](https://rk-iot.netlify.app/assets/assets/1.jpg) | Sensor Circuit Diagram (ESP1 + ESP2) |
-| ![UI](https://rk-iot.netlify.app/assets/assets/2.png)          | Dashboard - Sensor View              |
-| ![UI](https://rk-iot.netlify.app/assets/assets/3.png)          | Dashboard - Averages Graph           |
-| ![UI](https://rk-iot.netlify.app/assets/assets/4.png)          | Dashboard - pH & TDS                 |
-| ![DFD](https://rk-iot.netlify.app/assets/assets/5.png)         | Data Flow Diagram                    |
-| ![Power](https://rk-iot.netlify.app/assets/assets/6.png)       | Power System Diagram                 |
+* LeafLens pipeline transforms raw leaf images into actionable predictions.
+* Signal color coding helps instantly interpret the severity of disease.
 
 ---
 
-## ☀️ Solar Power System
+## 📂 Repository Components
 
-* 🔋 **2x Loom 20W 12V Solar Panels**
-
-  * One directly powers the system (daytime).
-  * Second charges 2x 12V 6Ah Li-ion batteries via 20A Solar Charge Controller.
-* 🔌 Power routed through **12V Relay System** with auto switch logic.
-* Buck converters:
-
-  * **5V 4A Converter #1** – ESP32s
-  * **5V 4A Converter #2** – Raspberry Pi
-* Raspberry Pi GPIO controls:
-
-  * Pump Relay (via ESP32 #3)
-  * Stepper Motor Driver (camera slider)
+* **Train_plant_disease.ipynb**: Dataset exploration and model training.
+* **Test_plant_disease.ipynb / .py**: Inference on test images.
+* **TEST-cam.py**: Live webcam input for real-time predictions.
+* **Supporting data files**: Image datasets, model checkpoints, and preprocessing scripts.
 
 ---
 
-## 🧱 Tech Stack
+## ⚡ Usage (Conceptual)
 
-| Component        | Stack                             |
-| ---------------- | --------------------------------- |
-| Microcontrollers | ESP32, NodeMCU                    |
-| SBC              | Raspberry Pi 5                    |
-| Languages        | Python, JavaScript, C++ (Arduino) |
-| Frontend         | React.js, Chart.js                |
-| Backend          | Node.js + Express.js              |
-| Database         | MongoDB (Atlas Cloud)             |
-| ML               | TensorFlow Lite, OpenCV           |
-| Hosting          | Netlify (Frontend), Railway (API) |
+1. Load the dataset and preprocess images.
+2. Train the CNN model using the notebook.
+3. Validate the model on test images.
+4. Use live camera feed to capture leaves and receive predictions.
+5. Interpret output: label, confidence, and signal color.
 
 ---
 
-## 🗂️ Directory Structure
+## 📌 Summary
 
-```bash
-Smart-Hydroponic-Farming-Plant-Disease-Detection-System/
-├── client/                   # React frontend
-│   ├── public/
-│   └── src/
-│       ├── api/
-│       ├── components/
-│       ├── context/
-│       ├── hooks/
-│       └── utils/
-│
-├── sensor code/             # ESP32 & NodeMCU firmware
-│   └── farming/
-│       ├── esp32_1.ino
-│       ├── esp32_2.ino
-│       └── nodemcu_relay.ino
-│
-├── server/                  # Node.js backend
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   └── utils/
-│
-├── ml/                      # AI/ML pipeline
-│   ├── model/
-│   └── scripts/
-│       ├── preprocess.py
-│       ├── train.py
-│       └── tflite_converter.py
-│
-├── docs/
-│   ├── Smart_Hydroponic_Farming.md
-│   └── API_Documentation.md
-├── .gitignore
-├── LICENSE
-└── README.md
-```
-
----
-
-## ⚙️ Installation & Setup
-
-### 🔀 Clone the Repository
-
-```bash
-git clone https://github.com/abdul-rahman-1/Smart-Hydroponic-Farming-Plant-Disease-Detection-System.git
-cd Smart-Hydroponic-Farming-Plant-Disease-Detection-System
-```
-
-### 🚀 Backend Setup
-
-```bash
-cd server
-cp .env.example .env
-npm install
-npm start
-```
-
-### 🎯 Frontend Setup
-
-```bash
-cd client
-npm install
-npm run dev
-```
-
-### 🧠 ML Setup (Optional)
-
-```bash
-cd ml
-pip install -r requirements.txt
-python scripts/train.py
-```
-
-### 📡 Microcontroller Firmware
-
-* Open `.ino` files in Arduino IDE
-* Update Wi-Fi credentials
-* Upload to ESP32 or NodeMCU
-
----
-
-## 🌐 Live Demo
-
-* **Web Dashboard:** [rk-iot.netlify.app](https://rk-iot.netlify.app)
-* **API Endpoint:** [rk-server.up.railway.app/api/data](https://rk-server.up.railway.app/api/data)
-
----
-
-## 📄 License
-
-MIT License. See [LICENSE](./LICENSE) for details.
-
----
-
-## 🙌 Acknowledgments
-
-Special thanks to open-source contributors and community mentors.
-
----
-
-> 🌿 Empowering agriculture with smart IoT and edge AI. Let plants speak, we listen. 🌿
+LeafLens offers a complete AI-powered solution for plant disease detection. By combining deep learning with real-time image capture, it provides fast, reliable, and actionable insights to improve agricultural productivity and sustainability.

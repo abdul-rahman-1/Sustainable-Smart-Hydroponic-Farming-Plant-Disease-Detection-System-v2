@@ -1,0 +1,77 @@
+{
+  "_id": {
+    "$oid": "6731a7d079efe860252ecdd4"
+  },
+  "Temperature": 24.5,
+  "Humidity": 60,
+  "CO2": 1908,
+  "Level": 234.21,
+  "TDS": 0,
+  "FlowRate": 0,
+  "pH": 6.75,
+  "Lux": 227,
+  "Avg_pH": "6.8:22/Nov,15.9:21/Nov,0.2:08/Sep,0.3:28/Jul,6.6:14/Jul,6.6:09/Jul,6.7:03/Jul",
+  "Avg_Temp": "24.5:22/Nov,25.8:21/Nov,29.8:08/Sep,29.8:28/Jul,27.1:14/Jul,29.3:09/Jul,27.1:03/Jul",
+  "Avg_Humid": "60.0:22/Nov,66.0:21/Nov,80.0:08/Sep,54.0:28/Jul,47.0:14/Jul,50.0:09/Jul,48.0:03/Jul",
+  "Avg_CO2": "1908.0:22/Nov,3662.0:21/Nov,1616.0:08/Sep,1521.0:28/Jul,1159.0:14/Jul,1313.0:09/Jul,1369.0:03/Jul",
+  "Avg_FlowRate": "0.0:22/Nov,0.0:21/Nov,0.0:08/Sep,0.0:28/Jul,0.0:14/Jul,0.0:09/Jul,4.0:03/Jul",
+  "Avg_Level": "234.2:22/Nov,232.7:21/Nov,0.0:08/Sep,0.0:28/Jul,0.0:14/Jul,0.0:09/Jul,0.0:03/Jul",
+  "Avg_TDS": "0.0:22/Nov,201.3:21/Nov,21.8:08/Sep,19.8:28/Jul,27.1:14/Jul,15.0:09/Jul,24.1:03/Jul",
+  "Avg_Lux": "227.0:22/Nov,147.0:21/Nov,154.0:08/Sep,191.0:28/Jul,212.0:14/Jul,204.0:09/Jul,218.0:03/Jul",
+  "LastUpdate": {
+    "Time": "10:57",
+    "Date": "22/11"
+  },
+  "Sensor": "Offline",
+  "Avg_BatteryCurrent": "0.2:22/Nov,0.4:21/Nov,0.2:20/Nov,0.3:19/Nov,0.5:18/Nov,0.3:17/Nov,0.4:16/Nov",
+  "Avg_LoadCurrent": "0.3:22/Nov,0.3:21/Nov,0.3:20/Nov,0.4:19/Nov,0.3:18/Nov,0.3:17/Nov,0.4:16/Nov",
+  "Avg_SolarCurrent": "0.1:22/Nov,0.8:21/Nov,0.6:20/Nov,0.7:19/Nov,0.9:18/Nov,0.8:17/Nov,0.6:16/Nov",
+  "BatteryCurrent": 0.16,
+  "LoadCurrent": 0.26,
+  "SolarCurrent": 0.11,
+  "Plant_1": {
+    "label": "Corn_(maize)___healthy",
+    "confidence": 0.9731,
+    "signal": "green",
+    "height_cm": 74.75,
+    "predicted_height_cm": 74.10346212645867,
+    "timestamp": "2025-11-22 11:36:36",
+    "image": ""
+  },
+  "Plant_2": {
+    "label": "Corn_(maize)___healthy",
+    "confidence": 0.9939,
+    "signal": "green",
+    "height_cm": 74.75,
+    "predicted_height_cm": 74.10346212645867,
+    "timestamp": "2025-11-22 11:36:48",
+    "image": ""
+  },
+  "Plant_3": {
+    "label": "Corn_(maize)___healthy",
+    "confidence": 0.9538,
+    "signal": "green",
+    "height_cm": 74.75,
+    "predicted_height_cm": 74.10346212645867,
+    "timestamp": "2025-11-22 11:36:51",
+    "image": ""
+  },
+  "Plant_4": {
+    "label": "Corn_(maize)___healthy",
+    "confidence": 0.9819,
+    "signal": "green",
+    "height_cm": 74.75,
+    "predicted_height_cm": 74.10346212645867,
+    "timestamp": "2025-11-22 11:36:54",
+    "image": ""
+  },
+  "Plant_5": {
+    "label": "Corn_(maize)___healthy",
+    "confidence": 0.9563,
+    "signal": "green",
+    "height_cm": 74.75,
+    "predicted_height_cm": 74.10346212645867,
+    "timestamp": "2025-11-22 11:36:57",
+    "image": ""
+  }
+}

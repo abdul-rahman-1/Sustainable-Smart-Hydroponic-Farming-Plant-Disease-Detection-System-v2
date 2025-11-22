@@ -227,6 +227,10 @@ h6 {
 .cont{
     height: 82vh;
     overflow-y: auto;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
 .container {
