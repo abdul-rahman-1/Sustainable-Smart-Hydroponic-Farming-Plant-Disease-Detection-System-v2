@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-# 🌱 LeafGuard — Smart IoT-Based Hydroponic Plant Monitoring & AI Disease Detection (Updated)
-=======
+
 # 🌱 LeafGuard — Smart IoT-Based Hydroponic Plant Monitoring & AI Disease Detection
->>>>>>> 9a4a1f35b67326be56e0eb552ac48b5d0bf480be
 
 A next-generation **IoT + AI-based hydroponic farming system** that intelligently monitors environmental and water parameters, automates irrigation and nutrient balance, and detects plant diseases in real time using AI-powered image processing.
 
