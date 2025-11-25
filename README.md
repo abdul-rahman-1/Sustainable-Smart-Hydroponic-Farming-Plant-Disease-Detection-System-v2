@@ -132,8 +132,7 @@ New API features:
 * **Frontend:** CamView renders stored Base64 image directly in cards.
 
 ---
-
-## 🌐 System Architecture (Updated)
+## 🌐 System Architecture
 
 ```mermaid
 flowchart TD
