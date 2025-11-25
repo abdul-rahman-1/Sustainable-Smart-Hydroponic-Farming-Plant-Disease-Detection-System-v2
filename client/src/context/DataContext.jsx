@@ -1,95 +1,149 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-const SERV_KEY = import.meta.env.VITE_REACT_KEY;
-const API_URL = "https://api-server-ab9a.onrender.com/api/data";
+/**
+ * Centralized data layer:
+ * - Fetches /api/data from Render (uses serv key from env)
+ * - Polls every 2s when Online, every 10s when Offline
+ * - Exposes:
+ *   - payload (latest document from Mongo)
+ *   - status ("Online" | "Offline" | "Error" | "Loading...")
+ *   - lastUpdateTime ("DD/MM HH:mm" or "N/A")
+ *   - timeSeries: rolling arrays per live key for realtime charts
+ *   - parseAvgString: helper to parse Avg_* strings
+ */
 
 const DataContext = createContext(null);
 
-export function DataProvider({ children, pollMs = 2000 }) {
+const LIVE_KEYS = [
+  "Temperature",
+  "Humidity",
+  "CO2",
+  "Lux",
+  "TDS",
+  "FlowRate",
+  "Level",
+  "pH",
+  "BatteryCurrent",
+  "LoadCurrent",
+  "SolarCurrent",
+];
+
+export function DataProvider({
+  children,
+  pollMsOnline = 2000,
+  pollMsOffline = 10000,
+  seriesMaxPoints = 60,
+}) {
   const [payload, setPayload] = useState(null);
   const [status, setStatus] = useState("Loading...");
   const [lastUpdateTime, setLastUpdateTime] = useState("Loading...");
-  const [error, setError] = useState(null);
+  const [timeSeries, setTimeSeries] = useState({}); // { key: [{time, value}], ... }
 
-  const intervalRef = useRef(null);
+  const apiBase =  "https://api-server-0f64.onrender.com";
+  const servKey = import.meta.env.VITE_REACT_KEY;
+
+  const pollTimerRef = useRef(null);
   const abortRef = useRef(null);
 
+  // ---- Helpers ----
+  const parseAvgString = (avgStr = "") =>
+    (avgStr || "")
+      .split(",")
+      .map((s) => {
+        const [v, t] = s.split(":");
+        const value = parseFloat(v);
+        return { value: Number.isFinite(value) ? value : null, time: t || "Unknown" };
+      })
+      .filter((x) => x.value != null);
+
+  // push one realtime point per LIVE_KEYS into timeSeries (bounded length)
+  const pushLivePoint = (doc) => {
+    setTimeSeries((prev) => {
+      const next = { ...prev };
+      const time = new Date().toLocaleTimeString();
+      LIVE_KEYS.forEach((k) => {
+        const val = doc?.[k];
+        if (val == null) return;
+        const arr = Array.isArray(next[k]) ? [...next[k]] : [];
+        arr.push({ time, value: val });
+        if (arr.length > seriesMaxPoints) arr.shift();
+        next[k] = arr;
+      });
+      return next;
+    });
+  };
+
   const fetchOnce = async () => {
+    if (!servKey) {
+      console.error("VITE_REACT_KEY missing. Add it to your .env.");
+      setStatus("Error");
+      return;
+    }
     try {
       abortRef.current?.abort();
-      abortRef.current = new AbortController();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-      const res = await fetch(API_URL, {
-        headers: { serv: SERV_KEY },
-        signal: abortRef.current.signal,
+      const res = await fetch(`${apiBase}/api/data`, {
+        method: "GET",
+        headers: { serv: servKey },
+        signal: controller.signal,
       });
-      const data = await res.json();
-      const p = data?.[0] ?? {};
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const doc = Array.isArray(json) ? json[0] : json;
 
-      setPayload(p || null);
+      setPayload(doc || null);
 
-      const st = p.Sensor || "Offline";
-      setStatus(st);
+      const s = doc?.Sensor || "Offline";
+      setStatus(s);
 
-      if (p.LastUpdate) {
-        const { Date: dt, Time: tm } = p.LastUpdate;
-        setLastUpdateTime(`${dt || "N/A"} ${tm || "N/A"}`);
+      if (doc?.LastUpdate) {
+        const { Date: d, Time: t } = doc.LastUpdate;
+        setLastUpdateTime(`${d || "N/A"} ${t || "N/A"}`);
       } else {
         setLastUpdateTime("N/A");
       }
 
-      setError(null);
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        setError(e?.message || "Network error");
-        setStatus("Error");
+      if (s === "Online" && doc) {
+        pushLivePoint(doc);
       }
+    } catch (err) {
+      console.error("Data fetch error:", err);
+      setStatus("Error");
     }
   };
 
+  // Dynamic polling based on status
   useEffect(() => {
-    // initial fetch immediately on load
+    // first fetch on mount
     fetchOnce();
-    // start polling
-    intervalRef.current = setInterval(fetchOnce, pollMs);
 
     return () => {
-      clearInterval(intervalRef.current);
+      clearInterval(pollTimerRef.current);
       abortRef.current?.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollMs]);
+  }, []);
 
-  // derived helpers
-  const plants = useMemo(() => {
-    const arr = [];
-    if (!payload) return arr;
-    for (let i = 1; i <= 5; i++) {
-      const p = payload[`Plant_${i}`];
-      if (p) arr.push({ ...p, id: i });
-    }
-    return arr;
-  }, [payload]);
+  // Adjust polling interval when status changes
+  useEffect(() => {
+    clearInterval(pollTimerRef.current);
+    const intervalMs = status === "Online" ? pollMsOnline : pollMsOffline;
+    pollTimerRef.current = setInterval(fetchOnce, intervalMs);
+    return () => clearInterval(pollTimerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, pollMsOnline, pollMsOffline]);
 
   const value = useMemo(
     () => ({
       payload,
       status,
       lastUpdateTime,
-      error,
-      plants,
-      // parsing helper reused by multiple screens
-      parseAvgString: (avgStr = "") =>
-        (avgStr || "")
-          .split(",")
-          .map((s) => {
-            const [v, t] = s.split(":");
-            const value = parseFloat(v);
-            return { value: isNaN(value) ? null : value, time: t || "Unknown" };
-          })
-          .filter((x) => x.value != null),
+      timeSeries,
+      parseAvgString,
     }),
-    [payload, status, lastUpdateTime, error, plants]
+    [payload, status, lastUpdateTime, timeSeries]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
