@@ -289,8 +289,8 @@ npm run dev
 **Frontend .env:**
 
 ```env
-VITE_API_BASE=https://api-server-0f64.onrender.com
-VITE_REACT_KEY=aosrhglakjhfglkjahrsoutyapow448097539208475908274dilfhgjalsh24jthwkljhlkjhw45th3lkj5h34lkj5h32lk4jhlkjhqlwekjrhtlkjwh35M
+VITE_API_BASE=https://*******.onrender.com
+VITE_REACT_KEY=**********************
 ```
 
 ---
